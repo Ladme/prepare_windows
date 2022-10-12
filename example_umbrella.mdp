@@ -1,0 +1,60 @@
+; 500 ns umbrella sampling
+integrator               = md
+dt                       = 0.02 
+nsteps                   = 25000000 
+nstxout                  = 0 
+nstvout                  = 0
+nstfout                  = 0
+nstlog                   = 1000 
+nstxout-compressed       = 10000
+compressed-x-precision   = 100
+
+cutoff-scheme            = Verlet
+nstlist                  = 20
+pbc                      = xyz
+verlet-buffer-tolerance  = 0.005
+
+coulombtype              = reaction-field 
+rcoulomb                 = 1.1
+epsilon_r                = 15    ; 2.5 (with polarizable water)
+epsilon_rf               = 0
+vdw_type                 = cutoff  
+vdw-modifier             = Potential-shift-verlet
+rvdw                     = 1.1
+
+tcoupl                   = v-rescale 
+tc-grps                  = Protein_Membrane W_ION 
+tau-t                    = 1.0 1.0
+ref-t                    = 310 310
+continuation             = no
+gen-vel                  = yes
+gen-temp                 = 310
+
+Pcoupl                   = parrinello-rahman 
+Pcoupltype               = semiisotropic
+tau-p                    = 12.0
+compressibility          = 3e-4 3e-4
+ref-p                    = 1.0 1.0
+refcoord-scaling         = all
+
+lincs-order              = 8
+lincs-iter               = 2
+
+pull                     = yes
+pull-nstfout             = 100
+pull-nstxout             = 100
+
+pull_ngroups             = 2
+pull_ncoords             = 1
+pull_group1_name         = [PULL_GROUP_1]
+pull_group2_name         = [PULL_GROUP_2]
+
+pull_coord1_type         = umbrella
+pull_coord1_geometry     = distance
+pull_coord1_groups       = 1 2
+pull_coord1_dim          = Y Y N
+
+pull_coord1_rate         = 0
+pull_coord1_k            = [K_CONST]
+pull_coord1_start        = no
+pull_coord1_init         = [INIT_DIST]

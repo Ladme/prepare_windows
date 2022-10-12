@@ -1,0 +1,55 @@
+# you can also specify WINDOW_ORIGIN like this:
+# pull_dir PATH_TO_THE_PULLING_DIRECTORY
+# in this case, the PATH_TO_THE_PULLING_DIRECTORY will be used for all windows
+# and supplying WINDOW_ORIGIN is not necessary
+
+# you can specify the name of the pulled groups like this:
+# pull_groups GROUP1_NAME GROUP2_NAME
+# this will replace all instances of '[PULL_GROUP_1]' and '[PULL_GROUP_2]' in the mdp file with 'GROUP1_NAME' and 'GROUP2_NAME', respectively
+
+# you can also specify just one of the groups like this:
+# pull_group_1 GROUP1_NAME
+# and similarly for the other group:
+# pull_group_2 GROUP2_NAME
+
+# REFERENCE_VALUE FORCE_CONSTANT WINDOW_ORIGIN
+2.00 40  ../TOWARDS/3_pulling
+1.95 60  ../TOWARDS/3_pulling
+1.90 60  ../TOWARDS/3_pulling
+1.85 60  ../TOWARDS/3_pulling
+1.80 60  ../TOWARDS/3_pulling
+1.75 60  ../TOWARDS/3_pulling
+1.70 60  ../TOWARDS/3_pulling
+1.65 60  ../TOWARDS/3_pulling
+1.60 60  ../TOWARDS/3_pulling
+1.55 60  ../AWAY/3_pulling
+1.50 80  ../TOWARDS/3_pulling
+1.47 200 ../AWAY/3_pulling
+1.44 400 ../TOWARDS/3_pulling
+1.41 400 ../AWAY/3_pulling
+1.38 400 ../TOWARDS/3_pulling
+1.35 400 ../AWAY/3_pulling
+1.32 400 ../TOWARDS/3_pulling
+1.29 400 ../AWAY/3_pulling
+1.26 600 ../TOWARDS/3_pulling
+1.23 600 ../AWAY/3_pulling
+1.20 600 ../TOWARDS/3_pulling
+1.17 600 ../AWAY/3_pulling
+1.14 600 ../TOWARDS/3_pulling
+1.11 600 ../AWAY/3_pulling
+1.08 600 ../TOWARDS/3_pulling
+1.05 600 ../AWAY/3_pulling
+1.02 600 ../TOWARDS/3_pulling
+0.99 600 ../AWAY/3_pulling
+0.96 600 ../TOWARDS/3_pulling
+0.93 400 ../AWAY/3_pulling
+0.90 400 ../TOWARDS/3_pulling
+0.87 400 ../AWAY/3_pulling
+0.84 200  ../TOWARDS/3_pulling
+0.81 80  ../AWAY/3_pulling
+0.75 40  ../TOWARDS/3_pulling
+0.70 40  ../AWAY/3_pulling
+0.65 40  ../TOWARDS/3_pulling
+0.60 80  ../AWAY/3_pulling
+0.55 200 ../TOWARDS/3_pulling
+0.50 400 ../AWAY/3_pulling
