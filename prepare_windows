@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 """
 This script prepares umbrella sampling windows from arbitrary pulling trajectories.
 Only works for 1D collective variables.
@@ -6,134 +8,18 @@ Released under MIT License.
 """
 
 # @@@@@@@@@@@@@@@@@@@@@@@@
-# @       OPTIONS        @
+# @       GENERAL        @
 # @@@@@@@@@@@@@@@@@@@@@@@@
 
-# version of gromacs to activate using the Infinity modules
-GROMACS_VERSION = "gromacs:2021.4-plumed"
-
-
-# <<<<PULLING FILES>>>>
-# the script assumes that all files from the different pulling simulations
-# are named correspondingly and are just located in different directories
-
-# name of the file containing values of the collective variable captured during the pulling simulation
-PULL_X     = "pulling_pullx.xvg"
-
-# name of the .mdp file used for pulling simulations
-PULL_MDP   = "pulling.mdp"
-
-# name of the .tpr file used for pulling simulations
-PULL_TPR   = "pulling.tpr"
-
-# name of the .xtc file from the pulling simulations
-PULL_XTC   = "pulling.xtc"
-
-# name of the topology file of the system
-SYSTEM_TOP = "system.top"
-
-# name of the index file of the system
-SYSTEM_NDX = "index.ndx"
-
-# names of additional files that should be copied from 
-# the pulling directories into individual umbrella sampling windows
-# leave empty ([]) if not needed
-PULL_ADDITIONAL = ["reference.gro"]
-
-
-
-# <<<<UMBRELLA INPUT FILES>>>>
-
-# path to the "window list" with definitions of individual umbrella sampling windows
-# NOTE that "window list" must follow the correct format (REFERENCE_VALUE FORCE_CONSTANT WINDOW_ORIGIN)
-WINDOW_LIST = "example_windows.txt"
-
-# path to the .mdp file used for umbrella sampling windows
-# note that in the mdp file:
-# a) "[FORCE_CONSTANT]" and "[K_CONST]" (for backwards compatibility) 
-#    will be replaced with the FORCE_CONSTANT specified for the target window
-# b) "[REFERENCE_VALUE]" and "[INIT_DIST]" (for backwards compatibility)
-#    will be replaced with the REFERENCE_VALUE specified for the target window 
-# c) "[PULL_GROUP_1/2]" will be replaced with the PULL_GROUP specified for the target set of umbrella windows
-UMBRELLA_MDP = "example_umbrella.mdp"
-
-# name of the run script for umbrella sampling
-UMBRELLA_RUN = "precycle_md_dim"
-
-# paths to additional files that should be copied into the individual umbrella sampling windows
-UMBRELLA_ADDITIONAL = []
-
-
-
-# <<<<ADDITIONAL FILES>>>>
-
-# paths to additional files that should be copied into the directory from which this script is being run
-GLOBAL_ADDITIONAL = []
-
-
-# <<<<MDP VALIDATION>>>>
-
-# validate the umbrella mdp file (will print warning if validation fails)
-# you can also set any of the options below to None and they will not be checked
-VALIDATE_MDP = True
-
-# expected value of the mdp option 'pull'
-VALIDATE_PULL = "yes"
-
-# expected _minimal_ value of the mdp option 'pull-nstfout'
-VALIDATE_NSTFOUT = 1000
-
-# expected _minimal_value of the mdp option 'pull-nstxout'
-VALIDATE_NSTXOUT = 1000
-
-# index of the restraint used for umbrella sampling
-VALIDATE_UMBRELLA_ID = 1
-
-
-# <<<<INDEX VALIDATION>>>>
-
-# validate the index file
-VALIDATE_NDX = True
-
-
-# <<<<ADDITIONAL OPTIONS>>>>
-
-# name of the logfile
-LOGFILE = "prepare_windows.log"
-
-# precision of the trajectory splitting
-SKIP_MULTIPLIER = 5
-
-# column in the PULL_X file corresponding to time (counting from zero)
-TIME_COL = 0
-
-# column in the PULL_X file corresponding to the CV value
-CV_COL   = 1
-
-# when copying itp files into umbrella sampling windows, 
-# (do not) copy entire directories, if provided
-COPY_ITP_DIRECTORIES = True
-
-
-
-
-# @@@@@@@@@@@@@@@@@@@@@@@@
-# @ DO NOT EDIT THE FILE @
-# @   BELOW THIS LINE!   @
-# @@@@@@@@@@@@@@@@@@@@@@@@
+SCRIPT_NAME   = "Prepare Windows"
+VERSION       = "2022/10/15"
+CONFIG_FILE   = "prepare_windows.config"
 
 try:
     import sys, os, shutil
 except ModuleNotFoundError:
     print("\nError. Missing required libraries (sys, os, shutil).\n")
     sys.exit()
-    
-# @@@@@@@@@@@@@@@@@@@@@@@@
-# @       GENERAL        @
-# @@@@@@@@@@@@@@@@@@@@@@@@
-
-SCRIPT_NAME   = "Prepare Windows"
-VERSION       = "2022/10/15"
 
 # @@@@@@@@@@@@@@@@@@@@@@@@
 # @   BASIC FUNCTIONS    @
@@ -157,6 +43,78 @@ def longest_string(strings):
     Returns the length of the longest string from strings.
     """
     return len(max(strings, key=len))
+
+# @@@@@@@@@@@@@@@@@@@@@@@@
+# @   READING OPTIONS    @
+# @@@@@@@@@@@@@@@@@@@@@@@@
+
+OPTIONS_DICT = {"gromacsversion": None,
+                "pullx": None,
+                "pullmdp": None,
+                "pulltpr": None,
+                "pullxtc": None,
+                "systemtop": None,
+                "systemndx": None,
+                "pulladditional": [],
+                "windowlist": None,
+                "umbrellamdp": None,
+                "umbrellarun": None,
+                "umbrellaadditional": [],
+                "globaladditional": [],
+                "validatemdp": None,
+                "validatepull": None,
+                "validatenstfout": None,
+                "validatenstxout": None,
+                "validateumbrellaid": None,
+                "validatendx": None,
+                "logfile": None,
+                "skipmultiplier": None,
+                "timecol": None,
+                "cvcol": None,
+                "copyitpdirectories": None}
+
+LIST_OPTIONS = ["pulladditional", "umbrellaadditional", "globaladditional"]
+BOOL_OPTIONS = ["validatemdp", "validatendx", "copyitpdirectories"]
+INT_OPTIONS  = ["validatenstfout", "validatenstxout", "validateumbrellaid", "skipmultiplier", "timecol", "cvcol"] 
+
+if not os.path.exists(CONFIG_FILE):
+    print(f"\nError. Config file '{CONFIG_FILE}' not found.\n")
+    sys.exit()
+
+for line in open(CONFIG_FILE):
+    decommented = decomment(line)
+    if not decommented.strip() == "":
+        split = decommented.split()
+        key = split[0].lower().replace("_", "").replace("-", "")
+
+        if key in LIST_OPTIONS:
+            if len(split) == 1: continue
+            OPTIONS_DICT[key] = [x for x in split[1:]]
+        
+        elif key in BOOL_OPTIONS:
+            if split[1] == "yes": val = True
+            else: val = False
+            OPTIONS_DICT[key] = val
+        
+        elif key in INT_OPTIONS:
+            if "." in split[1]:
+                print(f"\nError. Config file contains float value for option that expects integer.")
+                print(f"Concerned line: '{line.strip()}'.")
+                sys.exit()
+            OPTIONS_DICT[key] = int(split[1])
+        
+        else:
+            OPTIONS_DICT[key] = split[1]
+
+# check that all options have been loaded
+for key in OPTIONS_DICT:
+    if OPTIONS_DICT[key] == None:
+        print(f"\nError. Required option '{key}' has not been set in the config file.")
+        sys.exit()
+
+GROMACS_VERSION, PULL_X, PULL_MDP, PULL_TPR, PULL_XTC, SYSTEM_TOP, SYSTEM_NDX, PULL_ADDITIONAL, WINDOW_LIST, \
+UMBRELLA_MDP, UMBRELLA_RUN, UMBRELLA_ADDITIONAL, GLOBAL_ADDITIONAL, VALIDATE_MDP, VALIDATE_PULL, VALIDATE_NSTFOUT, \
+VALIDATE_NSTXOUT, VALIDATE_UMBRELLA_ID, VALIDATE_NDX, LOGFILE, SKIP_MULTIPLIER, TIME_COL, CV_COL, COPY_ITP_DIRECTORIES = OPTIONS_DICT.values()
 
 # @@@@@@@@@@@@@@@@@@@@@@@@
 # @   PULL DIRECTORIES   @
@@ -646,6 +604,7 @@ def find_configurations(win_references, win_origins, times, cvs, time_steps):
 # @@@@@@@@@@@@@@@@@@@@@@@@
 
 def main():
+
     log = open(LOGFILE, "w")
     print()
     logprint(f"{SCRIPT_NAME} v{VERSION}\n", log)
@@ -680,7 +639,6 @@ def main():
         logprint(f">>> no pull groups found in '{WINDOW_LIST}'\n", log)
     
     # validate the mdp file
-    n_warnings = 0
     try:
         with open(UMBRELLA_MDP) as file:
             mdp_content = file.read()
@@ -690,6 +648,7 @@ def main():
 
     mdp_content = modify_mdp_content(mdp_content, references, biases, pull_groups)
     
+    n_warnings = 0
     if VALIDATE_MDP:
         logprint(f"\nValidating the mdp file '{UMBRELLA_MDP}'...\n", log)        
         n_warnings += validate_umbrella_mdp(mdp_content, pull_groups, log)
