@@ -133,7 +133,7 @@ except ModuleNotFoundError:
 # @@@@@@@@@@@@@@@@@@@@@@@@
 
 SCRIPT_NAME   = "Prepare Windows"
-VERSION       = "2022/10/12"
+VERSION       = "2022/10/15"
 
 # @@@@@@@@@@@@@@@@@@@@@@@@
 # @   BASIC FUNCTIONS    @
@@ -694,7 +694,7 @@ def main():
         logprint(f"\nValidating the mdp file '{UMBRELLA_MDP}'...\n", log)        
         n_warnings += validate_umbrella_mdp(mdp_content, pull_groups, log)
         if n_warnings == 0:
-            logprint(">>> mdp file has been validated. No problems have been found.\n", log)
+            logprint(">>> mdp file has been validated, no problems have been found.\n", log)
 
     # validate the ndx file
     if VALIDATE_NDX:
@@ -704,7 +704,7 @@ def main():
             n_warnings += validate_ndx_file(mdp_content, f"{pull}/{SYSTEM_NDX}", log)
             
             if old_n_warnings == n_warnings:
-                logprint(">>> ndx file has been validated. No problems have been found.\n", log)
+                logprint(">>> ndx file has been validated, no problems have been found.\n", log)
     
     # read CV from pulling
     logprint("\nReading CV values from pulling...\n", log)
@@ -734,7 +734,7 @@ def main():
             sys.exit()
     
     if n_warnings == 0:
-        logprint("\nUmbrella sampling windows have been succesfully generated (no warnings).\n", log)
+        logprint("\nUmbrella sampling windows have been successfully generated (no warnings).\n", log)
     elif n_warnings == 1:
         logprint(f"\n1 WARNING has been raised during the run! Check the log file for more details.\n", log)
     else:
