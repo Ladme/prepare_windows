@@ -250,7 +250,7 @@ def split_trajectory(pull_dir):
             skip = (pullx // xtc) * SKIP_MULTIPLIER
         else:
             time_step = xtc * dt * SKIP_MULTIPLIER
-            logprint("Warning. Using 'xtc' time step...", log)
+            print("Warning. Using 'xtc' time step...")
             skip = SKIP_MULTIPLIER        
             
         os.system(f"module add {GROMACS_VERSION} && cd {pull_dir} && mkdir frames && cd frames && touch unfinished && yes 0 | gmx trjconv -s ../{PULL_TPR} -f ../{PULL_XTC} -o conf.gro -sep -skip {skip} -quiet && rm unfinished")
