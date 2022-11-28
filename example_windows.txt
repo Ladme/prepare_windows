@@ -12,6 +12,10 @@
 # and similarly for the other group:
 # pull_group_2 GROUP2_NAME
 
+# you can use macros anywhere in the file
+# macros are defined followingly
+# #define MACRO MACRO_DEFINITION
+
 # REFERENCE_VALUE FORCE_CONSTANT WINDOW_ORIGIN
 2.00 40  ../TOWARDS/3_pulling
 1.95 60  ../TOWARDS/3_pulling

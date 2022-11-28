@@ -12,7 +12,7 @@ Released under MIT License.
 # @@@@@@@@@@@@@@@@@@@@@@@@
 
 SCRIPT_NAME   = "Prepare Windows"
-VERSION       = "2022/10/15"
+VERSION       = "2022/11/28"
 CONFIG_FILE   = "prepare_windows.config"
 
 try:
@@ -120,6 +120,31 @@ VALIDATE_NSTXOUT, VALIDATE_UMBRELLA_ID, VALIDATE_NDX, LOGFILE, SKIP_MULTIPLIER, 
 # @   PULL DIRECTORIES   @
 # @@@@@@@@@@@@@@@@@@@@@@@@
 
+def load_macros(w_list):
+    """
+    Loads macros from w_list.
+    """
+    macros = {}
+    for line in open(w_list):
+        if len(line.strip()) >= 7 and line.strip()[0:7] == "#define":
+            parsed = line.split()
+            try:
+                macros[parsed[1]] = parsed[2]
+            except IndexError:
+                print(f"\nWarning. Could not understand macro definition in line: {line}.\n")
+                continue
+    
+    return macros
+
+def expand_macros(string, macros):
+    """
+    Expands macros in a string.
+    """
+    for macro in macros:
+        string = string.replace(macro, macros[macro])
+
+    return string
+
 def check_pull_files(pull_dir):
     """
     Checks whether the files from pulling exist.
@@ -134,13 +159,13 @@ def check_pull_files(pull_dir):
     
     return True
 
-def get_pulls(w_list):
+def get_pulls(w_list, macros):
     """
     Reads paths to pulling directories from w_list.
     """
     pulls = []
     for line in open(w_list):
-        parsed = decomment(line).split()
+        parsed = decomment(expand_macros(line, macros)).split()
         if len(parsed) == 2 and parsed[0].lower() in ["pull_dir", "pull-dir", "pulldir", "pulling_directory", "pulling-directory", "pullingdirectory"]:
             return [parsed[1]]
         elif len(parsed) == 3 and "pull" not in parsed[0]:
@@ -151,7 +176,7 @@ def get_pulls(w_list):
     
     return list(set(pulls))
 
-def get_pull_groups(w_list):
+def get_pull_groups(w_list, macros):
     """
     Reads pull groups defined in the w_list file.
     """
@@ -159,7 +184,7 @@ def get_pull_groups(w_list):
     pull_group_2 = None
     
     for line in open(w_list):
-        parsed = decomment(line).split()
+        parsed = decomment(expand_macros(line, macros)).split()
         if len(parsed) == 2:
             if parsed[0].lower().replace("_","").replace("-","") in ["pullgroup1", "pulledgroup1"]:
                 pull_group_1 = parsed[1]
@@ -265,13 +290,13 @@ def split_trajectory(pull_dir):
 # @  WINDOWS PREPARATION @
 # @@@@@@@@@@@@@@@@@@@@@@@@
 
-def load_windows(w_list, origin = None):
+def load_windows(w_list, macros, origin = None):
     """
     Loads information about umbrella sampling windows from w_list.
     """
     distances, biases, origins = [], [], []
     for line in open(w_list):
-        parsed = decomment(line).split()
+        parsed = decomment(expand_macros(line, macros)).split()
         if len(parsed) >= 2 and "pull" not in parsed[0].lower():
             try:
                 distances.append(float(parsed[0]))
@@ -610,7 +635,8 @@ def main():
     logprint(f"{SCRIPT_NAME} v{VERSION}\n", log)
     
     logprint("\nSearching for pulling directories...\n", log)
-    pull_dirs = get_pulls(WINDOW_LIST)
+    macros = load_macros(WINDOW_LIST)
+    pull_dirs = get_pulls(WINDOW_LIST, macros)
     
     # check whether the required files exist in pulling directories
     for pd in pull_dirs:
@@ -626,12 +652,12 @@ def main():
         logprint("OK\n", log)
     
     logprint(f"\nLoading windows from {WINDOW_LIST}...\n", log)
-    references, biases, origins = load_windows(WINDOW_LIST, None if len(pull_dirs) > 1 else pull_dirs[0])
+    references, biases, origins = load_windows(WINDOW_LIST, macros, None if len(pull_dirs) > 1 else pull_dirs[0])
     logprint(f">>> {len(references)} windows loaded\n", log)
     
     # get pull groups
     logprint("\nLooking for pull groups...\n", log)
-    pull_groups = get_pull_groups(WINDOW_LIST)
+    pull_groups = get_pull_groups(WINDOW_LIST, macros)
     for (i, group) in enumerate(pull_groups):
         if group is not None:
             logprint(f">>> using explicitly defined pull group {i+1} '{pull_groups[i]}'.\n", log)    
