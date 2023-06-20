@@ -12,7 +12,7 @@ Released under MIT License.
 # @@@@@@@@@@@@@@@@@@@@@@@@
 
 SCRIPT_NAME   = "Prepare Windows"
-VERSION       = "2022/11/28"
+VERSION       = "2023/06/20"
 CONFIG_FILE   = "prepare_windows.config"
 
 try:
@@ -350,6 +350,8 @@ def validate_umbrella_mdp(mdp_content, pull_groups, log):
     pull_code_specified = False
     if VALIDATE_PULL is None: pull_code_specified = True
     
+    gen_vel_set = False
+
     for line in mdp_content.split("\n"):
         split = line.split(";")[0].split()
         if len(split) == 0: continue
@@ -393,7 +395,15 @@ def validate_umbrella_mdp(mdp_content, pull_groups, log):
                 logprint(f">>> Warning. Value of the 'nstxout' option might be too large. Check your mdp file.\n", log)
                 logprint(f">>> Concerned line: '{line}'\n", log)
                 return_code += 1
+
+        if "continuation" in split[0] and "yes" in split[2]:
+            logprint(f">>> Warning. Umbrella sampling run should NOT be a continuation. Set 'continuation' to 'no' in the mdp file.\n", log)
+            logprint(f">>> Concerned line: '{line}'\n", log)
+            return_code += 1
         
+        if ("gen-vel" in split[0] or "gen_vel" in split[0]) and "yes" in split[2]:
+            gen_vel_set = True
+
         if not skip_groups and ("pull_group" in split[0] and "_name" in split[0]) or ("pull-group" in split[0] and "-name" in split[0]):
             groups[split[0].replace("pull_group", "").replace("_name", "").replace("pull-group", "").replace("-name", "")] = split[2]
         
@@ -435,13 +445,17 @@ def validate_umbrella_mdp(mdp_content, pull_groups, log):
                 logprint(f">>> Warning. Expected umbrella group name '{pull_groups[1]}', got '{umbrella_group_names[0]}' and '{umbrella_group_names[1]}'\n", log)
                 logprint(f">>> Concerned line: '{line}'\n", log)
                 return_code += 1           
-    
+
     if not pull_code_specified:
         logprint(f">>> Warning. Could not find a required option 'pull = {VALIDATE_PULL}'. Check your mdp file.\n", log)
         return_code += 1
     
     if not pull_coordinate_exists:
         logprint(">>> Warning. Could not find 'groups' of the umbrella coordinate. Check your mdp file.\n", log)
+        return_code += 1
+
+    if not gen_vel_set:
+        logprint(">>> Warning. Velocities should be generated at the start of the run. Set 'gen-vel' to 'yes' in the mdp file.\n", log)
         return_code += 1
     
     return return_code
