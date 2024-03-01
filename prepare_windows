@@ -12,7 +12,7 @@ Released under MIT License.
 # @@@@@@@@@@@@@@@@@@@@@@@@
 
 SCRIPT_NAME   = "Prepare Windows"
-VERSION       = "2023/06/20"
+VERSION       = "2024/03/01"
 CONFIG_FILE   = "prepare_windows.config"
 
 try:
@@ -215,8 +215,9 @@ def get_itps(topology):
     """
     itps = []
     for line in open(topology):
-        if "#include" in line:
-            itps.append(line.split()[1].replace('"',''))
+        decommented = line.split(";")[0]
+        if "#include" in decommented:
+            itps.append(decommented.split()[1].replace('"',''))
     
     return itps
 
