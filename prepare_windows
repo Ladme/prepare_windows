@@ -12,14 +12,11 @@ Released under MIT License.
 # @@@@@@@@@@@@@@@@@@@@@@@@
 
 SCRIPT_NAME   = "Prepare Windows"
-VERSION       = "2024/03/01"
+VERSION       = "2024/06/04"
 CONFIG_FILE   = "prepare_windows.config"
 
-try:
-    import sys, os, shutil
-except ModuleNotFoundError:
-    print("\nError. Missing required libraries (sys, os, shutil).\n")
-    sys.exit()
+# these libraries are part of the Python standard library; their import can't fail
+import sys, os, shutil
 
 # @@@@@@@@@@@@@@@@@@@@@@@@
 # @   BASIC FUNCTIONS    @
