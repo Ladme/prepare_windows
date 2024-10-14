@@ -12,7 +12,7 @@ Released under MIT License.
 # @@@@@@@@@@@@@@@@@@@@@@@@
 
 SCRIPT_NAME   = "Prepare Windows"
-VERSION       = "2024/06/04"
+VERSION       = "2024/10/14"
 CONFIG_FILE   = "prepare_windows.config"
 
 # these libraries are part of the Python standard library; their import can't fail
@@ -55,6 +55,7 @@ OPTIONS_DICT = {"gromacsversion": None,
                 "pulladditional": [],
                 "windowlist": None,
                 "umbrellamdp": None,
+                "renameumbrellamdp": "umbrella.mdp",
                 "umbrellarun": None,
                 "umbrellaadditional": [],
                 "globaladditional": [],
@@ -110,7 +111,7 @@ for key in OPTIONS_DICT:
         sys.exit()
 
 GROMACS_VERSION, PULL_X, PULL_MDP, PULL_TPR, PULL_XTC, SYSTEM_TOP, SYSTEM_NDX, PULL_ADDITIONAL, WINDOW_LIST, \
-UMBRELLA_MDP, UMBRELLA_RUN, UMBRELLA_ADDITIONAL, GLOBAL_ADDITIONAL, VALIDATE_MDP, VALIDATE_PULL, VALIDATE_NSTFOUT, \
+UMBRELLA_MDP, RENAME_UMBRELLA_MDP, UMBRELLA_RUN, UMBRELLA_ADDITIONAL, GLOBAL_ADDITIONAL, VALIDATE_MDP, VALIDATE_PULL, VALIDATE_NSTFOUT, \
 VALIDATE_NSTXOUT, VALIDATE_UMBRELLA_ID, VALIDATE_NDX, LOGFILE, SKIP_MULTIPLIER, TIME_COL, CV_COL, COPY_ITP_DIRECTORIES = OPTIONS_DICT.values()
 
 # @@@@@@@@@@@@@@@@@@@@@@@@
@@ -471,7 +472,7 @@ def modify_mdp_content(content, reference, bias, pull_groups):
     
     return content
 
-def fetch_umbrella_mdp(umbrella_mdp, destination, reference, bias, pull_groups):
+def fetch_umbrella_mdp(umbrella_mdp, destination, reference, bias, pull_groups, name = "umbrella.mdp"):
     """
     Copies umbrella_mdp into destination and modifies its content.
     """
@@ -480,8 +481,8 @@ def fetch_umbrella_mdp(umbrella_mdp, destination, reference, bias, pull_groups):
     
     mdp_content = modify_mdp_content(mdp_content, reference, bias, pull_groups)
     
-    with open(f"{destination}/umbrella.mdp", "w") as file:
-        file.write(mdp_content)
+    with open(f"{destination}/{name}", "w") as file:
+        file.write(mdp_content) 
     
 def validate_ndx_file(mdp_content, path_ndx, log):
     """
@@ -590,7 +591,7 @@ def fetch_files(references, biases, origins, real_cvs, real_times, time_steps, p
                 sys.exit()                
         
         try:
-            fetch_umbrella_mdp(UMBRELLA_MDP, f"win{wid}", references[i], biases[i], pull_groups)
+            fetch_umbrella_mdp(UMBRELLA_MDP, f"win{wid}", references[i], biases[i], pull_groups, RENAME_UMBRELLA_MDP)
         except:
             logprint("ERROR\n", log)
             print(f"Error. File {UMBRELLA_MDP} could not be copied.")
