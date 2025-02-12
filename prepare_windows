@@ -556,9 +556,9 @@ def fetch_files(references, biases, origins, real_cvs, real_times, time_steps, p
         for file in files:
             # if directory is detected in #include, copy the entire directory instead of the individual files
             # this behavior can be disabled by setting COPY_ITP_DIRECTORIES to False
-            if COPY_ITP_DIRECTORIES and "/" in file:
-                if file.split("/")[0] not in [".", "..", origins[i]]:
-                    directory = file.split("/")[0]
+            if COPY_ITP_DIRECTORIES and "/" in file and \
+                file.split("/")[0] not in [".", "..", origins[i]]:
+                directory = file.split("/")[0]
                 
                 if directory in copied_dirs:
                     continue
