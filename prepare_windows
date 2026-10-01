@@ -12,7 +12,7 @@ Released under MIT License.
 # @@@@@@@@@@@@@@@@@@@@@@@@
 
 SCRIPT_NAME   = "Prepare Windows"
-VERSION       = "2025/02/12"
+VERSION       = "2026/10/01"
 CONFIG_FILE   = "prepare_windows.config"
 
 # these libraries are part of the Python standard library; their import can't fail
@@ -46,6 +46,7 @@ def longest_string(strings):
 # @@@@@@@@@@@@@@@@@@@@@@@@
 
 OPTIONS_DICT = {"gromacsversion": None,
+                "modulesystem": None,
                 "pullx": None,
                 "pullmdp": None,
                 "pulltpr": None,
@@ -110,7 +111,7 @@ for key in OPTIONS_DICT:
         print(f"\nError. Required option '{key}' has not been set in the config file.")
         sys.exit()
 
-GROMACS_VERSION, PULL_X, PULL_MDP, PULL_TPR, PULL_XTC, SYSTEM_TOP, SYSTEM_NDX, PULL_ADDITIONAL, WINDOW_LIST, \
+GROMACS_VERSION, MODULE_SYSTEM, PULL_X, PULL_MDP, PULL_TPR, PULL_XTC, SYSTEM_TOP, SYSTEM_NDX, PULL_ADDITIONAL, WINDOW_LIST, \
 UMBRELLA_MDP, RENAME_UMBRELLA_MDP, UMBRELLA_RUN, UMBRELLA_ADDITIONAL, GLOBAL_ADDITIONAL, VALIDATE_MDP, VALIDATE_PULL, VALIDATE_NSTFOUT, \
 VALIDATE_NSTXOUT, VALIDATE_UMBRELLA_ID, VALIDATE_NDX, LOGFILE, SKIP_MULTIPLIER, TIME_COL, CV_COL, COPY_ITP_DIRECTORIES = OPTIONS_DICT.values()
 
@@ -277,7 +278,7 @@ def split_trajectory(pull_dir):
             print("Warning. Using 'xtc' time step...")
             skip = SKIP_MULTIPLIER        
             
-        os.system(f"module add {GROMACS_VERSION} && cd {pull_dir} && mkdir frames && cd frames && touch unfinished && yes 0 | gmx trjconv -s ../{PULL_TPR} -f ../{PULL_XTC} -o conf.gro -sep -skip {skip} -quiet && rm unfinished")
+        os.system(f"{'meta' if MODULE_SYSTEM.lower() in ['meta', 'metacentrum', 'metamodules', 'metamodule'] else ''}module add {GROMACS_VERSION} && cd {pull_dir} && mkdir frames && cd frames && touch unfinished && yes 0 | gmx_mpi trjconv -s ../{PULL_TPR} -f ../{PULL_XTC} -o conf.gro -sep -skip {skip} -quiet && rm unfinished")
     
     # if the trajectory is already split, get time_step from generated frames
     else:
